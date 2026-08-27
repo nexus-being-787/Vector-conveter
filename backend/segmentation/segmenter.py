@@ -59,11 +59,13 @@ class Segmenter:
         min_area_fraction: float = MIN_AREA_FRACTION,
         min_area_absolute: int = MIN_AREA_ABSOLUTE,
         use_watershed: bool = False,
+        use_morphology: bool = True,
         morph_kernel_size: int = 3,
     ) -> None:
         self.min_area_fraction = min_area_fraction
         self.min_area_absolute = min_area_absolute
         self.use_watershed = use_watershed
+        self.use_morphology = use_morphology
         self.morph_kernel = cv2.getStructuringElement(
             cv2.MORPH_ELLIPSE, (morph_kernel_size, morph_kernel_size)
         )
@@ -96,9 +98,10 @@ class Segmenter:
             color_mask = (label_map == palette_idx).astype(np.uint8) * 255
 
             # Morphological closing: bridge small gaps
-            color_mask = cv2.morphologyEx(
-                color_mask, cv2.MORPH_CLOSE, self.morph_kernel
-            )
+            if self.use_morphology:
+                color_mask = cv2.morphologyEx(
+                    color_mask, cv2.MORPH_CLOSE, self.morph_kernel
+                )
 
             # Connected components
             num_comps, comp_labels, stats, centroids = cv2.connectedComponentsWithStats(

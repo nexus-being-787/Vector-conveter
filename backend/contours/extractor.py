@@ -55,9 +55,11 @@ class ContourExtractor:
         self,
         min_perimeter: float = MIN_PERIMETER,
         edge_smooth_kernel: int = 0,  # 0 = no smoothing before contour extraction
+        approx_method: int = cv2.CHAIN_APPROX_NONE,
     ) -> None:
         self.min_perimeter = min_perimeter
         self.edge_smooth_kernel = edge_smooth_kernel
+        self.approx_method = approx_method
 
     def extract(self, segmentation: SegmentationResult) -> ContoursResult:
         """
@@ -93,7 +95,7 @@ class ContourExtractor:
 
         # RETR_CCOMP: two-level hierarchy — outer then holes
         contours, hierarchy = cv2.findContours(
-            mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE
+            mask, cv2.RETR_CCOMP, self.approx_method
         )
 
         outer: List[ExtractedContour] = []

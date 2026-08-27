@@ -68,6 +68,7 @@ class VectorizationMode(str, Enum):
     ILLUSTRATION = "illustration"
     PORTRAIT = "portrait"
     PHOTOGRAPH = "photograph"
+    PIXEL_ART = "pixel_art"
 
 
 class BackgroundHandling(str, Enum):
@@ -203,7 +204,13 @@ class VectorizationPipeline:
 
         # ── Stage: Segmentation ───────────────────────────────────────
         yield ProgressEvent("segmentation", 30, "Segmenting color regions…")
-        segmenter = Segmenter(use_watershed=cfg.use_watershed)
+        use_watershed = cfg.use_watershed
+        use_morphology = True
+        if cfg.mode == VectorizationMode.PIXEL_ART:
+            use_watershed = False  # Avoid watershed blurring pixel borders
+            use_morphology = False # Avoid morphology rounding corners
+
+        segmenter = Segmenter(use_watershed=use_watershed, use_morphology=use_morphology)
         segmentation = segmenter.segment(quantized)
         yield ProgressEvent("segmentation", 40,
                             f"Found {segmentation.total_regions} regions",
@@ -211,7 +218,12 @@ class VectorizationPipeline:
 
         # ── Stage: Contour Extraction ─────────────────────────────────
         yield ProgressEvent("contours", 45, "Extracting contours…")
-        extractor = ContourExtractor()
+        
+        approx_method = cv2.CHAIN_APPROX_NONE
+        if cfg.mode == VectorizationMode.PIXEL_ART:
+            approx_method = cv2.CHAIN_APPROX_SIMPLE
+
+        extractor = ContourExtractor(approx_method=approx_method)
         contours_result = extractor.extract(segmentation)
         total_contours = sum(
             len(rc.outer_contours) + len(rc.hole_contours)
@@ -223,7 +235,9 @@ class VectorizationPipeline:
 
         # ── Stage: Bézier Fitting ─────────────────────────────────────
         yield ProgressEvent("bezier", 58, "Fitting Bézier curves…")
-        fitter = BezierFitter(detail_level=cfg.detail_level)
+        
+        force_lines = (cfg.mode == VectorizationMode.PIXEL_ART)
+        fitter = BezierFitter(detail_level=cfg.detail_level, force_lines=force_lines)
 
         region_groups: List[SVGRegionGroup] = []
         for rc in contours_result.region_contours:

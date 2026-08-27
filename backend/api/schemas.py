@@ -21,6 +21,7 @@ class VectorizationMode(str, Enum):
     ILLUSTRATION = "illustration"
     PORTRAIT = "portrait"
     PHOTOGRAPH = "photograph"
+    PIXEL_ART = "pixel_art"
 
 
 class BackgroundHandling(str, Enum):

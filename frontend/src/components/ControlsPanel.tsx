@@ -28,6 +28,7 @@ const MODE_OPTIONS = [
   { value: 'illustration', label: 'Illustration' },
   { value: 'portrait',     label: 'Portrait' },
   { value: 'photograph',   label: 'Photograph' },
+  { value: 'pixel_art',    label: 'Pixel Art (Blocky)' },
 ];
 
 const BG_OPTIONS = [

@@ -256,13 +256,13 @@ class BezierFitter:
     detail_level: 1 (very simplified) to 10 (very detailed)
     """
 
-    # epsilon = base / detail_level  (higher detail → smaller epsilon → less simplification)
     DP_BASE_EPSILON = 2.0
     BEZIER_ERROR_BASE = 4.0
 
-    def __init__(self, detail_level: int = 5) -> None:
+    def __init__(self, detail_level: int = 5, force_lines: bool = False) -> None:
         detail_level = max(1, min(10, detail_level))
         self.detail_level = detail_level
+        self.force_lines = force_lines
         self.dp_epsilon = self.DP_BASE_EPSILON / detail_level
         self.bezier_error = self.BEZIER_ERROR_BASE / detail_level
 
@@ -271,6 +271,26 @@ class BezierFitter:
         pts = contour.points  # Nx2 float32
         if len(pts) < 3:
             return None
+
+        path_segments: List[PathSegment] = []
+
+        if self.force_lines:
+            # Bypass simplification and bezier fitting, use exact points as lines
+            # Closed paths require going from p[0] -> p[1] ... -> p[n-1] -> p[0]
+            # Since SVG generation handles 'Z' (closepath), we just need segments for each point.
+            for i in range(1, len(pts)):
+                path_segments.append(PathSegment(
+                    is_bezier=False,
+                    bezier=None,
+                    line_end=pts[i]
+                ))
+            
+            return FittedPath(
+                start=pts[0],
+                segments=path_segments,
+                is_closed=True,
+                is_hole=contour.is_hole,
+            )
 
         # Douglas-Peucker simplification
         simplified = douglas_peucker(pts, self.dp_epsilon)
@@ -282,7 +302,6 @@ class BezierFitter:
         if not bezier_segments:
             return None
 
-        path_segments: List[PathSegment] = []
         for ctrl in bezier_segments:
             path_segments.append(PathSegment(
                 is_bezier=True,
