@@ -257,8 +257,8 @@ class BezierFitter:
     """
 
     # epsilon = base / detail_level  (higher detail → smaller epsilon → less simplification)
-    DP_BASE_EPSILON = 20.0
-    BEZIER_ERROR_BASE = 8.0
+    DP_BASE_EPSILON = 2.0
+    BEZIER_ERROR_BASE = 4.0
 
     def __init__(self, detail_level: int = 5) -> None:
         detail_level = max(1, min(10, detail_level))

@@ -18,8 +18,8 @@ from backend.color.quantizer import QuantizedImage
 logger = logging.getLogger(__name__)
 
 # Minimum region area as fraction of total pixels (filters noise)
-MIN_AREA_FRACTION = 0.0005   # 0.05 % of image
-MIN_AREA_ABSOLUTE = 64       # absolute minimum pixels
+MIN_AREA_FRACTION = 0.0001   # 0.01 % of image
+MIN_AREA_ABSOLUTE = 16       # absolute minimum pixels
 
 
 @dataclass

@@ -93,7 +93,7 @@ class ContourExtractor:
 
         # RETR_CCOMP: two-level hierarchy — outer then holes
         contours, hierarchy = cv2.findContours(
-            mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS
+            mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE
         )
 
         outer: List[ExtractedContour] = []
